@@ -5,6 +5,7 @@ from .agenda import Agenda
 from .binary import Binary
 from .brainf import Brainf
 from .executive_docs import ExecutiveDocs
+from .email_verification import EmailVerification
 from .faq import FAQ
 from .fortune_cookie import FortuneCookie
 from .instant_answer import InstantAnswer
@@ -19,6 +20,7 @@ all_plugins: list[type[Plugin]] = [
     Binary,
     Brainf,
     ExecutiveDocs,
+    EmailVerification,
     FAQ,
     FortuneCookie,
     InstantAnswer,

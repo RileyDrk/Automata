@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   automata:
     image: ghcr.io/muncomputersciencesociety/automata
@@ -13,7 +11,7 @@ services:
       - AUTOMATA_MONGO_HOST=mongo
 
   mongo:
-    image: mvertes/alpine-mongo
+    image: mongo:7
     restart: always
     ports:
       - "127.0.0.1:27017:27017"
