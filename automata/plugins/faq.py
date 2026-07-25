@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from automata.utils import CommandContext, Plugin
@@ -79,12 +80,10 @@ class FAQ(Plugin):
 
         return embed_arts
 
-    @commands.command()
-    async def sample(self, ctx: CommandContext, degree: str = "blank"):
-        """Replies with a sample of the courses you need for your first year.
-
-        Takes type of degree as argument.
-        """
+    @app_commands.describe(degree="Choose `science` for B.Sc. or `arts` for B.A.")
+    @commands.hybrid_command(description="Show a sample first-year CS course plan.")
+    async def sample(self, ctx: CommandContext, degree: str):
+        """Show a sample first-year CS course plan for a B.Sc. or B.A."""
 
         if degree.upper() in SCIENCE:
             embed = await self.create_embed_science()
@@ -95,16 +94,11 @@ class FAQ(Plugin):
             await ctx.send(embed=embed)
 
         else:
-            # No type of degree was specified
-            valid_args = SCIENCE + ARTS
-            args_str = ", ".join(valid_args)
-            await ctx.send(
-                "Specify the type of degree (Valid arguments: " + args_str + ")"
-            )
+            await ctx.send("Please choose either `science` (B.Sc.) or `arts` (B.A.).")
 
-    @commands.command()
+    @commands.hybrid_command(description="Answer common questions about studying CS at MUN.")
     async def admission(self, ctx: CommandContext):
-        """Replies with some FAQ about studying CS at MUN."""
+        """Answer common questions about studying CS at MUN."""
         embed_admission = discord.Embed(
             title="Frequently Asked Questions",
             url="https://www.mun.ca/computerscience/ugrad/FAQ.php",
@@ -129,9 +123,9 @@ class FAQ(Plugin):
 
         await ctx.send(embed=embed_admission)
 
-    @commands.command()
+    @commands.hybrid_command(name="did", description="Share information about DID and OSDD.")
     async def DID(self, ctx: CommandContext):
-        """Replies with informative information on DID."""
+        """Share information about DID and OSDD."""
         await ctx.send(
             """DID and OSDD are mental health issues on the DSM5 list
 Pluralkit is an accessibility bot so you know which alter you are talking to

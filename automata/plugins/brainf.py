@@ -1,3 +1,4 @@
+from discord import app_commands
 from discord.ext import commands
 
 from automata.utils import CommandContext, Plugin
@@ -42,10 +43,11 @@ def execute_loop(source):
 
 
 class Brainf(Plugin):
-    """Brainf*ck"""
+    """Run small Brainf*ck programs."""
 
-    @commands.command()
+    @app_commands.describe(message="The Brainf*ck source code to run.")
+    @commands.hybrid_command(name="bf", description="Run a Brainf*ck program.")
     async def bf(self, ctx: CommandContext, message: str):
-        """Responds with the output of running the message in brainf*ck"""
+        """Run a Brainf*ck program and return its output."""
 
         await ctx.send(execute(message))

@@ -1,16 +1,19 @@
+from discord import app_commands
 from discord.ext import commands
 
 from automata.utils import CommandContext, Plugin
 
 
 class Binary(Plugin):
-    """Binary"""
+    """Encode text as binary."""
 
-    @commands.command()
+    @app_commands.describe(message="The text to encode.")
+    @commands.hybrid_command(description="Encode text as binary bytes.")
     async def binary(self, ctx: CommandContext, message: str):
-        binaryString = ""
+        """Encode text as binary bytes."""
+        binary_string = ""
 
         for char in message:
-            binaryString += format(ord(char), "b") + " "
+            binary_string += format(ord(char), "b") + " "
 
-        await ctx.send(binaryString)
+        await ctx.send(binary_string)

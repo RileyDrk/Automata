@@ -33,6 +33,14 @@ For feature requests / help getting the bot running, don't fret to ask questions
 
 Once done, follow the instructions under either of the headings below, depending on how you wish to run the bot.
 
+## Using commands
+
+Automata uses Discord application commands. Type `/` in the configured primary
+server to browse commands, read their descriptions, and fill in their options.
+Commands are synced to `AUTOMATA_PRIMARY_GUILD` when the bot starts, so changes
+are available there immediately. The legacy `!` prefix remains available for
+existing users.
+
 ### With Docker
 
 Start the containers by running `docker-compose up -d`
@@ -57,6 +65,10 @@ Features are provided to the bot via plugins - if you wish to add your own funct
 1. Create a new file in `automata/plugins` for your plugin
 2. Add to your file the code for your plugin
    - This plugin will be a [discord.py cog](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html) - you can refer to their docs for examples of the things you can do and how to do them
+   - User-facing commands should use `@commands.hybrid_command` or
+     `@commands.hybrid_group`, with a concise `description` and
+     `@app_commands.describe` text for each option. This makes the command
+     discoverable in Discord's `/` picker while preserving the legacy prefix form.
    - You can use `lmgtfy.py` as a simple example
 3. In `automata/plugins/__init__.py`, import your plugin and add it to the `all_plugins` list
    - Once again, you can copy this from the `lmgtfy.py` example

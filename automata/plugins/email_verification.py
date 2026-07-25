@@ -16,6 +16,7 @@ from email.message import EmailMessage
 from typing import Any
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 from pymongo.errors import DuplicateKeyError
 
@@ -112,15 +113,18 @@ class EmailVerification(Plugin):
             return None
         return ctx.guild, member
 
-    @commands.group(invoke_without_command=True)
+    @commands.hybrid_group(
+        fallback="help", description="Verify your MUN email address and get the verified role."
+    )
     async def emailverify(self, ctx: CommandContext) -> None:
-        """Verify your MUN email address with `!emailverify start` and `!emailverify code`."""
+        """Explain how to verify your MUN email address."""
         await ctx.send(
-            "Use `!emailverify start your.name@mun.ca` to receive a code, then "
-            "`!emailverify code 12345678` to receive the verified role."
+            "Use `/emailverify start` with your `@mun.ca` email to receive a code, then "
+            "use `/emailverify code` to receive the verified role."
         )
 
-    @emailverify.command(name="start")
+    @app_commands.describe(email="Your MUN email address, ending in @mun.ca.")
+    @emailverify.command(name="start", description="Email a verification code to your @mun.ca address.")
     @commands.cooldown(3, 3600, commands.BucketType.user)
     async def emailverify_start(self, ctx: CommandContext, email: str) -> None:
         """Send a verification code to a @mun.ca email address."""
@@ -184,7 +188,8 @@ class EmailVerification(Plugin):
             f"{config.email_verification_code_ttl_minutes} minutes."
         )
 
-    @emailverify.command(name="code")
+    @app_commands.describe(code="The eight-digit code from your verification email.")
+    @emailverify.command(name="code", description="Confirm your emailed code and receive the verified role.")
     @commands.cooldown(5, 300, commands.BucketType.user)
     async def emailverify_code(self, ctx: CommandContext, code: str) -> None:
         """Confirm an emailed verification code and receive the verified role."""
@@ -197,7 +202,7 @@ class EmailVerification(Plugin):
             {"discord_id": ctx.author.id}
         )
         if verification is None:
-            await ctx.send("Start verification first with `!emailverify start your.name@mun.ca`.")
+            await ctx.send("Start verification first with `/emailverify start`.")
             return
         if verification.get("verified_at"):
             await ctx.send("Your MUN email is already verified.")

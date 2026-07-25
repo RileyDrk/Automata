@@ -15,9 +15,9 @@ class FortuneCookie(Plugin):
         async with httpx.AsyncClient() as client:
             return await client.get(f"{API_BASE}{api_path}")
 
-    @commands.command()
+    @commands.hybrid_command(description="Open a computer-themed fortune cookie.")
     async def fortune(self, ctx: CommandContext):
-        """Replies with a fortune cookie message"""
+        """Open a computer-themed fortune cookie."""
 
         response = await self._fetch("/fortune/computers")
         text = response.json()["fortune"]

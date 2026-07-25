@@ -1,6 +1,7 @@
 import re
 
 import httpx
+from discord import app_commands
 from discord.ext import commands
 
 from automata.utils import CommandContext, Plugin
@@ -9,9 +10,10 @@ from automata.utils import CommandContext, Plugin
 class InstantAnswer(Plugin):
     """Wrapper for Instant Answer API from DuckDuckGo"""
 
-    @commands.command()
+    @app_commands.describe(argument="What you want to look up.")
+    @commands.hybrid_command(name="ia", description="Look up a DuckDuckGo instant answer.")
     async def ia(self, ctx: CommandContext, *, argument: str):
-        """Replies with Instant Answer from DuckDuckGo"""
+        """Look up a DuckDuckGo instant answer."""
 
         output_template = (
             "**{subject}**: *Brought to you by **DuckDuckGo** Instant Answer API*\n\n"

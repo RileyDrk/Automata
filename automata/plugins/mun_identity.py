@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Union
 
 import discord
 import httpx
+from discord import app_commands
 from discord.ext import commands
 
 from automata.config import config
@@ -40,24 +41,26 @@ class MUNIdentity(Plugin):
         identity = await self.identities.find_one(query)
         return identity
 
-    @commands.group()
+    @commands.hybrid_group(
+        fallback="status", description="View or manage your MUN identity verification."
+    )
     async def identity(self, ctx: CommandContext):
-        """Manage identity validation."""
-        if not ctx.invoked_subcommand:
-            identity = await self.get_identity(member=ctx.author)
-            if identity is not None:
-                embed = discord.Embed()
-                embed.colour = discord.Colour.green()
-                embed.add_field(name="MUN Username", value=identity["mun_username"])
-                await ctx.send(embed=embed)
-            else:
-                await ctx.send(
-                    "You have not yet verified your identity. Please go to https://discord.muncompsci.ca/auth to verify."
-                )
+        """View your MUN identity verification status."""
+        identity = await self.get_identity(member=ctx.author)
+        if identity is not None:
+            embed = discord.Embed()
+            embed.colour = discord.Colour.green()
+            embed.add_field(name="MUN Username", value=identity["mun_username"])
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(
+                "You have not yet verified your identity. Visit https://discord.muncompsci.ca/auth to get a verification code, then use `/identity verify`."
+            )
 
-    @identity.command(name="verify")
+    @app_commands.describe(code="The verification code from discord.muncompsci.ca/auth.")
+    @identity.command(name="verify", description="Verify your MUN identity using an auth code.")
     async def identity_verify(self, ctx: CommandContext, code: str):
-        """Verify your identity."""
+        """Verify your MUN identity using an auth code."""
         current_identity = await self.get_identity(member=ctx.author)
         if current_identity is not None:
             await (
@@ -101,13 +104,15 @@ class MUNIdentity(Plugin):
             if type(is_verified_message.channel) is discord.DMChannel:
                 return
             await is_verified_message.delete(delay=15)
-            await ctx.message.delete(delay=15)
+            if ctx.interaction is None:
+                await ctx.message.delete(delay=15)
         else:
             await ctx.send(
                 "It appears that code is invalid. Please double-check that you copied all characters from the site, and try again."
             )
 
-    @identity.command(name="check")
+    @app_commands.describe(user="The member whose identity status you want to check.")
+    @identity.command(name="check", description="Check a member's identity verification status.")
     @commands.has_permissions(view_audit_log=True)
     async def identity_check(self, ctx: CommandContext, user: discord.Member):
         """Check the identity verification status of a user."""
@@ -123,7 +128,8 @@ class MUNIdentity(Plugin):
             embed.add_field(name="MUN Username", value="No username verified.")
             await ctx.send(embed=embed)
 
-    @identity.command(name="remove")
+    @app_commands.describe(user="The member whose identity you want to remove.")
+    @identity.command(name="remove", description="Remove a member's verified identity.")
     @commands.has_permissions(manage_messages=True)
     async def identity_remove(self, ctx: CommandContext, user: discord.Member):
         """Remove the identity from a user."""
@@ -155,7 +161,10 @@ class MUNIdentity(Plugin):
             )
             await ctx.send(embed=embed)
 
-    @identity.command(name="associate")
+    @app_commands.describe(
+        user="The member to associate.", mun_username="Their MUN username."
+    )
+    @identity.command(name="associate", description="Manually associate a member with a MUN username.")
     @commands.has_permissions(manage_messages=True)
     async def identity_associate(
         self, ctx: CommandContext, user: discord.Member, mun_username: str
@@ -188,7 +197,7 @@ class MUNIdentity(Plugin):
         )
         await ctx.send("Identity associated.")
 
-    @identity.command(name="disassociate")
+    @identity.command(name="disassociate", description="Remove your own verified identity.")
     async def identity_disassociate(self, ctx: CommandContext):
         """Disassociate your own identity from your discord account."""
         current_identity = await self.get_identity(member=ctx.author)
@@ -244,7 +253,7 @@ class MUNIdentity(Plugin):
             elif reaction.emoji == "❌":
                 return False
 
-    @identity.command(name="restore_roles")
+    @identity.command(name="restore_roles", description="Restore verified roles for registered members.")
     @commands.has_permissions(view_audit_log=True)
     async def identity_restore_roles(self, ctx: CommandContext):
         """Restores VERIFIED_ROLE to users with a registered identity who were not granted it."""

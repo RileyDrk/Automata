@@ -2,6 +2,7 @@ from time import sleep
 
 import httpx
 from bs4 import BeautifulSoup
+from discord import app_commands
 from discord.ext import commands
 
 from automata.utils import CommandContext, Plugin
@@ -43,13 +44,12 @@ class Man(Plugin):
         else:
             return s
 
-    @commands.command()
-    async def man(self, ctx: CommandContext, search: str = ""):
-        """Searches man7.org for the requested man page"""
+    @app_commands.describe(search="The manual page name, such as `ls` or `printf`.")
+    @commands.hybrid_command(description="Search man7.org for a Linux manual page.")
+    async def man(self, ctx: CommandContext, search: str):
+        """Search man7.org for a Linux manual page."""
         try:
-            if search == "":
-                await ctx.send("No search request given :(")
-            elif search in self.cached:
+            if search in self.cached:
                 if len(self.cached[search]) == 1:
                     await ctx.send(Man.urlfy(self.cached[search][0]))
                 else:
